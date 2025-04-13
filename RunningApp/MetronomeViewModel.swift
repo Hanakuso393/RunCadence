@@ -11,7 +11,13 @@ import AVFoundation
 
 @Observable
 class MetronomeViewModel {
-    var bpm: Double = 120
+    var bpm: Double = 120 {
+        didSet {
+            if isRunning {
+                restartTimer()
+            }
+        }
+    }
     var isRunning = false
 
     private var timer: Timer?
@@ -46,17 +52,25 @@ class MetronomeViewModel {
         }
 
         playerNode.play()
-
-        let interval = 60.0 / bpm
-        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            self?.playClick()
-        }
+        startTimer()
     }
 
     private func stop() {
         timer?.invalidate()
         timer = nil
         playerNode.stop()
+    }
+    
+    private func restartTimer() {
+        timer?.invalidate()
+        startTimer()
+    }
+    
+    private func startTimer() {
+        let interval = 60.0 / bpm
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            self?.playClick()
+        }
     }
 
     private func playClick() {
